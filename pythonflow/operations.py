@@ -41,8 +41,9 @@ class conditional(Operation):  # pylint: disable=C0103,W0223
     Note that the conditional operation will only execute one branch of the computation graph
     depending on `predicate`.
     """
-    def __init__(self, predicate, x, y=None, *, name=None, dependencies=None):  # pylint: disable=W0235
-        super(conditional, self).__init__(predicate, x, y, name=name, dependencies=dependencies)
+    def __init__(self, predicate, x, y=None, *, length=None, name=None, dependencies=None):  # pylint: disable=W0235
+        super(conditional, self).__init__(predicate, x, y,
+                                          length=length, name=name, dependencies=dependencies)
 
     def evaluate(self, context, callback=None):
         # Evaluate all dependencies first
@@ -71,7 +72,7 @@ constant = identity  # pylint: disable=invalid-name
 
 
 @opmethod
-def assert_(condition, message=None, *args, value=None):
+def assert_(condition, message=None, *args, value=None):  # pylint: disable=keyword-arg-before-vararg
     """
     Return `value` if the `condition` is satisfied and raise an `AssertionError` with the specified
     `message` and `args` if not.

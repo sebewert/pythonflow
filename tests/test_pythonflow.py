@@ -196,6 +196,21 @@ def test_conditional():
         graph(z, condition=False)
 
 
+def test_conditional_with_length():
+    def f(a):
+        return a, a
+
+    with pf.Graph() as graph:
+        x = pf.constant(4)
+        y = pf.placeholder(name='y')
+        condition = pf.placeholder(name='condition')
+
+        z1, z2 = pf.conditional(condition, pf.func_op(f, x), pf.func_op(f, y), length=2)
+
+    assert graph([z1, z2], condition=True) == (4, 4)
+    assert graph([z1, z2], condition=False, y=5) == (5, 5)
+
+
 @pytest.mark.parametrize('message', [None, "x should be smaller than %d but got %d"])
 def test_assert_with_dependencies(message):
     with pf.Graph() as graph:
@@ -311,3 +326,39 @@ def test_import():
         isfile = os_.path.isfile(__file__)
 
     assert graph(isfile)
+
+
+def test_tuple():
+    expected = 13
+    with pf.Graph() as graph:
+        a = pf.constant(expected)
+        b = pf.identity((a, a))
+    actual, _ = graph(b)
+    assert actual is expected, "expected %s but got %s" % (expected, actual)
+
+
+def test_list():
+    expected = 13
+    with pf.Graph() as graph:
+        a = pf.constant(expected)
+        b = pf.identity([a, a])
+    actual, _ = graph(b)
+    assert actual is expected, "expected %s but got %s" % (expected, actual)
+
+
+def test_dict():
+    expected = 13
+    with pf.Graph() as graph:
+        a = pf.constant(expected)
+        b = pf.identity({'foo': a})
+    actual = graph(b)['foo']
+    assert actual is expected, "expected %s but got %s" % (expected, actual)
+
+
+def test_slice():
+    with pf.Graph() as graph:
+        a = pf.constant(range(100))
+        b = pf.constant(1)
+        c = a[b:]
+
+    assert len(graph(c)) == 99
